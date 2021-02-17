@@ -1,13 +1,12 @@
 import matplotlib
-
 matplotlib.use('TkAgg')
 
-from matplotlib import pylab as plt
+import matplotlib.pylab as plt
 import nibabel as nib
 from nibabel import nifti1
 from nibabel.viewers import OrthoSlicer3D
 
-example_filename = 'Patient_8586291_109.nii.gz' # 文件路径
+example_filename = 'Patient_7626622_827_seg.nii.gz' # 文件路径
 
 img = nib.load(example_filename)
 # print(img)

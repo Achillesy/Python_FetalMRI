@@ -16,6 +16,6 @@ def readdcm(filepath):
     return images
 
 if __name__ == '__main__':
-    filepath = './Patient_8586291/_jdeng__0215032152'
+    filepath = './Patient_7626622/_jdeng__0215031846'
     dcm_images = readdcm(filepath)   #读取文件
-    sitk.WriteImage(dcm_images, "Patient_8586291_152.nii.gz") #保存为nii
+    sitk.WriteImage(dcm_images, "Patient_7626622_846.nii.gz") #保存为nii
