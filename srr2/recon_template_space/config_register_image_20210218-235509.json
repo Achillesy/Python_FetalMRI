@@ -1,0 +1,16 @@
+{
+    "date": "2021-02-18 23:55:09",
+    "dir-input-mc": "srr2/recon_subject_space/motion_correction",
+    "fixed": "/home/niftymic/Software/NiftyMIC/data/templates/STA27.nii.gz",
+    "fixed-mask": "/home/niftymic/Software/NiftyMIC/data/templates/STA27_mask.nii.gz",
+    "init-pca": true,
+    "initial-transform": null,
+    "log-config": 1,
+    "method": "RegAladin",
+    "moving": "srr2/recon_subject_space/srr_subject.nii.gz",
+    "moving-mask": "srr2/recon_subject_space/srr_subject_mask.nii.gz",
+    "output": "srr2/recon_template_space/srr_template_transform_sitk.txt",
+    "user": "niftymic @ virtualbox (Python 3.6.7, Linux, 4.15.0-135-generic, #139-Ubuntu SMP Mon Jan 18 17:38:24 UTC 2021, x86_64, x86_64)",
+    "verbose": 0,
+    "version": "0.8.0"
+}

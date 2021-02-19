@@ -1,0 +1,14 @@
+{
+    "bias-field-fwhm": 0.15,
+    "convergence-threshold": 1e-06,
+    "date": "2021-02-18 23:43:58",
+    "filename": "nifti/Patient_7626622_641.nii.gz",
+    "filename-mask": "seg/Patient_7626622_641_seg.nii.gz",
+    "log-config": 1,
+    "output": "srr2/preprocessing_n4itk/Patient_7626622_641.nii.gz",
+    "spline-order": 3,
+    "user": "niftymic @ virtualbox (Python 3.6.7, Linux, 4.15.0-135-generic, #139-Ubuntu SMP Mon Jan 18 17:38:24 UTC 2021, x86_64, x86_64)",
+    "verbose": 0,
+    "version": "0.8.0",
+    "wiener-filter-noise": 0.11
+}

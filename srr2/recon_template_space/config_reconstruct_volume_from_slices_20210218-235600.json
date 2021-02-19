@@ -1,0 +1,40 @@
+{
+    "alpha": 0.01,
+    "data-loss": "linear",
+    "data-loss-scale": 1,
+    "date": "2021-02-18 23:56:00",
+    "dir-input-mc": "srr2/recon_template_space/motion_correction",
+    "extra-frame-target": 10,
+    "filenames": [
+        "srr2/preprocessing_n4itk/Patient_7626622_641.nii.gz",
+        "srr2/preprocessing_n4itk/Patient_7626622_827.nii.gz",
+        "srr2/preprocessing_n4itk/Patient_7626622_846.nii.gz"
+    ],
+    "filenames-masks": [
+        "seg/Patient_7626622_641_seg.nii.gz",
+        "seg/Patient_7626622_827_seg.nii.gz",
+        "seg/Patient_7626622_846_seg.nii.gz"
+    ],
+    "intensity-correction": 1,
+    "isotropic-resolution": null,
+    "iter-max": 10,
+    "iterations": 15,
+    "log-config": 1,
+    "mask": false,
+    "minimizer": "lsmr",
+    "output": "srr2/recon_template_space/srr_template.nii.gz",
+    "pd-alg-type": "ALG2",
+    "reconstruction-space": "/home/niftymic/Software/NiftyMIC/data/templates/STA27.nii.gz",
+    "reconstruction-type": "TK1L2",
+    "rho": 0.1,
+    "sda": false,
+    "slice-thicknesses": null,
+    "suffix-mask": "",
+    "target-stack": "srr2/preprocessing_n4itk/Patient_7626622_641.nii.gz",
+    "tv-solver": "PD",
+    "use-masks-srr": 0,
+    "user": "niftymic @ virtualbox (Python 3.6.7, Linux, 4.15.0-135-generic, #139-Ubuntu SMP Mon Jan 18 17:38:24 UTC 2021, x86_64, x86_64)",
+    "verbose": 0,
+    "version": "0.8.0",
+    "viewer": "itksnap"
+}
