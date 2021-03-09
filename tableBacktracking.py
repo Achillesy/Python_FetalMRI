@@ -52,7 +52,7 @@ def insert_backtracking(db_conn, OrigName, OrigMR, OrigAcc, OrigGA, OrigImpressi
             (OrigName, OrigMR, OrigAcc, OrigGA, OrigImpression))
         return True
     except Error as err:
-        print('\033[1;35mINSERT', OrigName, OrigMR, OrigAcc, err, '. \033[0m')
+        print('\033[1;35mINSERT ', OrigName, OrigMR, OrigAcc, err, '. \033[0m')
         return False
 
 def insert_csv_to_backtracking(db_conn, filename):
@@ -74,19 +74,19 @@ def update_backtracking(db_conn, PseudoAcc, PseudoName, PseudoID, OrigAcc) -> bo
             WHERE OrigAcc = ?;
         """
     try:
-        PseudoAcc = PseudoAcc.zfill(6)
         db_conn.cursor().execute(table_update, \
             (PseudoAcc, PseudoName, PseudoID, OrigAcc))
         return True
     except Error as err:
-        print('\033[1;35mUPDATE', PseudoAcc, PseudoName, OrigAcc, err, '. \033[0m')
+        print('\033[1;35mUPDATE ', PseudoAcc, PseudoName, OrigAcc, err, '. \033[0m')
         return False
 
 def update_csv_to_backtracking(db_conn, filename):
     cfile = open(filename, 'r')
     rows = csv.reader(cfile)
     for row in rows:
-        if update_backtracking(db_conn, row[0], row[2], row[3], row[1]):
+        PseudoAcc = row[0].zfill(6)
+        if update_backtracking(db_conn, PseudoAcc, row[2], row[3], row[1]):
             print('UPDATE ' + row[2] + ' success.')
     cfile.close()
 
@@ -102,7 +102,7 @@ def select_backtracking(db_conn):
         for row in select_rows:
             acc_dict[row[0]] = [row[1], row[2]]
     except Error as err:
-        print('\033[1;35mSELECT', err, '. \033[0m')
+        print('\033[1;35mSELECT ', err, '. \033[0m')
 
 def modify_DicomTag(filename):
     if filename.endswith(".dcm"):
@@ -135,6 +135,3 @@ else:
             modify_DicomTag(os.path.join(root, f))
 
 conn.close()
-
-# testDicomFile = "../FetalData/20210301/exam_000001/series008_SAG BrainT2 HASTE/anon_img_0001.dcm"
-# modify_DicomTag(testDicomFile)
