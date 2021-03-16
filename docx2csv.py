@@ -1,20 +1,28 @@
 #!/usr/bin/env python
-
 #
 # Instructions:
-# Convert docx file to csv
+# Import patient info from docx file to csv. 
 #
 # \author     Xuchu Liu (xuchu_liu@rush.edu)
-# \date       03/06/2021
+# \date       03/10/2021
 #
 
 from os import close
+import sys
 import docx2txt
 import re
 import csv
 
-docxFile = '../FetalData/20210301/Fetal_MRI_Research_Cases_Normal_Brain.docx'
-csvFile = '../FetalData/20210301/Fetal_MRI_Research_Cases_Normal_Brain.csv'
+if len(sys.argv) != 3:
+    print("""
+Import patient info from docx file to csv. 
+
+Usage: %s patient.docx paitent.csv
+""" % (sys.argv[0]))
+    exit(-1)
+
+docxFile = sys.argv[1]
+csvFile = sys.argv[2]
 
 def read_docx(filename):
     txt = docx2txt.process(filename)

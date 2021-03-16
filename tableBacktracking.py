@@ -41,28 +41,6 @@ dicomPath = '../FetalData/20210301'
 
 dbFile = "FetalMRIsqlite3.db"
 
-# Insert
-def insert_backtracking(db_conn, OrigName, OrigMR, OrigAcc, OrigGA, OrigImpression) -> bool:
-    table_insert = f"""
-            INSERT INTO backtracking(OrigName, OrigMR, OrigAcc, OrigGA, OrigImpression)
-            VALUES (?, ?, ?, ?, ?);
-        """
-    try:
-        db_conn.cursor().execute(table_insert, \
-            (OrigName, OrigMR, OrigAcc, OrigGA, OrigImpression))
-        return True
-    except Error as err:
-        print('\033[1;35mINSERT ', OrigName, OrigMR, OrigAcc, err, '. \033[0m')
-        return False
-
-def insert_csv_to_backtracking(db_conn, filename):
-    cfile = open(filename, 'r')
-    rows = csv.reader(cfile)
-    for row in rows:
-        if insert_backtracking(db_conn, row[0], row[1], row[2], row[3], row[4]):
-            print('INSERT ' + row[0] + ' success.')
-    cfile.close()
-
 #UPDATE
 def update_backtracking(db_conn, PseudoAcc, PseudoName, PseudoID, OrigAcc) -> bool:
     table_update = f"""
@@ -115,10 +93,6 @@ def modify_DicomTag(filename):
 
 ##########
 conn = sqlite3.connect(dbFile)
-
-# INSERT State = 0
-# insert_csv_to_backtracking(conn, csvOrigFile)
-# conn.commit()
 
 # UPDATE State = 1
 #update_csv_to_backtracking(conn, csvAccFile)

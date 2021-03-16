@@ -29,7 +29,7 @@ import sqlite3
 from sqlite3.dbapi2 import Error
 from orthanc_rest_client import Orthanc
 
-dbFile = "FetalMRIsqlite3.db"
+dbFile = "/mnt/Storage/Xuchu_Liu/orthanc/db-fetal/FetalMRIsqlite3.db"
 orthancSrv = "http://localhost:8042"
 orthanc_path = "/mnt/Storage/Xuchu_Liu/orthanc/db-v6/"
 
@@ -38,57 +38,6 @@ para = ' -i y -l y -p y -x y -v y -z y -o '
 output_path = "/mnt/Storage/Xuchu_Liu/Workspace/Python/FetalData/seg_20210309/"
 
 seg = "python /mnt/Storage/Xuchu_Liu/Workspace/Python/NiftyMIC/MONAIfbs/monaifbs/fetal_brain_seg.py --input_names "
-
-# Insert
-def insert_series(db_conn, seriesId, SeriesDescription, SeriesDate, SeriesNumber, PseudoID, PseudoName, PseudoAcc, State) -> bool:
-    table_insert = f"""
-            INSERT INTO series (Id, SeriesDescription, SeriesDate, SeriesNumber, PseudoID, PseudoName, PseudoAcc, State)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?);
-        """
-    try:
-        db_conn.cursor().execute(table_insert, (seriesId, SeriesDescription, SeriesDate, SeriesNumber, PseudoID, PseudoName, PseudoAcc, State))
-        return True
-    except Error as err:
-        print('\033[1;35mINSERT', seriesId, err, '. \033[0m')
-        return False
-
-def insert_info_to_series():
-    all_series = orthanc.get_series()
-    seriesNew = 0
-    for series in all_series:
-        #info = orthanc.get_one_series(series)
-        # SeriesDescription = ''
-        # State = 0
-        # if info['MainDicomTags'].get('SeriesDescription'):
-        #     SeriesDescription = info['MainDicomTags']['SeriesDescription']
-        #     if bool(re.search('(?=.*HASTE)(?=.*T2)(?=.*BRAIN)(?=.*(SAG|AX|COR))', SeriesDescription, re.IGNORECASE)):
-        #         State = 1
-        # SeriesNumber = info['MainDicomTags']['SeriesNumber']
-        # SeriesDate = info['MainDicomTags']['SeriesDate']
-        # study = orthanc.get_series_study(series)
-        # PseudoID = study['PatientMainDicomTags']['PatientID']
-        # PseudoName = study['PatientMainDicomTags']['PatientName']
-        # PseudoAcc = study['MainDicomTags']['AccessionNumber']
-        info = orthanc.get_series_shared_tags(series)
-        SeriesDescription = ''
-        State = 0
-        if '0008,103e' in info:
-            SeriesDescription = info['0008,103e']['Value']
-            if bool(re.search('(?=.*HASTE)(?=.*T2)(?=.*BRAIN)(?=.*(SAG|AX|COR))', SeriesDescription, re.IGNORECASE)):
-                State = 1
-        SeriesDate = ''
-        if '0008,0021' in info:
-            SeriesDate = info['0008,0021']['Value']
-        elif '0008,0012' in info:
-            SeriesDate = info['0008,0012']['Value']
-        SeriesNumber = info['0020,0011']['Value']
-        PseudoID = info['0010,0020']['Value']
-        PseudoName = info['0010,0010']['Value']
-        PseudoAcc = info['0008,0050']['Value']
-        if insert_series(conn, series, SeriesDescription, SeriesDate, SeriesNumber, PseudoID, PseudoName, PseudoAcc, State):
-            print('INSERT ', PseudoName, PseudoAcc, SeriesDate, SeriesNumber, ' success.')
-            seriesNew += 1
-    print('Total of ' + str(seriesNew) + ' series INSERT success.')
 
 # SELECT State == 1
 series_dict = {}
@@ -140,10 +89,6 @@ def mkdirs(path):
 ##########
 conn = sqlite3.connect(dbFile)
 orthanc = Orthanc(orthancSrv, warn_insecure=False)
-
-# INSERT State = 0/1
-# insert_info_to_series()
-# conn.commit()
 
 # SELECT State == 1
 # select_series(conn)
