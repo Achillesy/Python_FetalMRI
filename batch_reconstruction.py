@@ -29,6 +29,7 @@
 
 import sys
 import os
+import time
 import sqlite3
 from sqlite3.dbapi2 import Error
 
@@ -47,6 +48,9 @@ recon = "niftymic_run_reconstruction_pipeline --filenames "
 input_path = sys.argv[1].rstrip('/')
 output_path = sys.argv[2].rstrip('/')
 arguments = ' '.join(sys.argv[3:])
+
+#setup start time
+t0 = time.time()
 
 # SELECT State == 3 GROUP BY PseudoAcc
 def select_pseudoid_series(db_conn):
@@ -181,6 +185,14 @@ for (key, value) in pseudoid_dict.items():
         preproc_recon = preproc_recon + 1
         print('\033[1;35mCreate subject ', recon_file, ' error. \033[0m')
 
+conn.close()
+
+#setup stop time
+t1 = time.time()
+total_time = t1-t0
+hours = int(total_time/3600)
+minutes = int((total_time - hours*3600)/60)
+seconds = total_time - hours*3600 - minutes*60
+print(f'Reconstruction took {hours:d}:{minutes:02d}:{seconds:.3f}')
 print('Total:' + str(total_recon) + ' Success:' + str(succ_recon) + \
     ' noTemplate:' + str(subject_recon) + ' noSubject:' + str(preproc_recon)) 
-conn.close()
