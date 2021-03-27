@@ -84,7 +84,7 @@ def update_state_series(db_conn, PseudoId, SeriesNumber, State) -> bool:
     table_update = f"""
             UPDATE series
             SET State = ?
-            WHERE State = 3 AND PseudoId = ? AND SeriesNumber = ?;
+            WHERE (State = 3 OR State = 9) AND PseudoId = ? AND SeriesNumber = ?;
         """
     try:
         db_conn.cursor().execute(table_update, (State, PseudoId, SeriesNumber))
@@ -131,6 +131,7 @@ for (key, value) in pseudoid_dict.items():
                 if os.path.isfile(nii_file) and os.path.isfile(seg_file):
                     filenames.append(str(nii_file))
                     filenames_masks.append(str(seg_file))
+        seriesnumber_dict = {}
         select_id_series(conn, key, '9')
         for (skey, svalue) in seriesnumber_dict.items():
             series_path = acc_path + '/' + svalue
