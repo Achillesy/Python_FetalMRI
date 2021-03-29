@@ -37,7 +37,7 @@ if len(sys.argv) < 3:
     print("""
 Batch process niftymic_run_reconstruction_pipeline.py according to series table. 
 
-Usage: %s fetal_brain_seg srr_CurrentDate [arguments...]
+Usage: %s fetal_brain_seg CurrentDate_srr [arguments...]
 """ % (sys.argv[0]))
     exit(-1)
 
@@ -155,7 +155,7 @@ for (key, value) in pseudoid_dict.items():
     print("Waitng... niftymic_run_reconstruction_pipeline ")
     reconcmd = recon + ' '.join(map(str, filenames)) + \
         ' --filenames-masks ' + ' '.join(map(str, filenames_masks)) + \
-        ' --dir-output ' + srr_path + ' ' + arguments + ' | tee ' + log_file
+        ' --dir-output ' + srr_path + ' ' + arguments + ' 2>&1 | tee ' + log_file
     # print(reconcmd) #Debug
     os.system(reconcmd)
     print("done!")

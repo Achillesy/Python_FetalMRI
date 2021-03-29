@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 # Instructions:
-# Batch process niftymic_run_reconstruction_pipeline.py according to last SeriesNumber. 
+# Batch process niftymic_run_reconstruction_pipeline.py again by select target stack. 
 # seg_CurrentDate
 #   |__PseudoAcc_PseudoName
 #   |    |__SeriesNumber_AX_HeightxWidth
@@ -13,20 +13,31 @@
 #   |    |__srr
 #   |__PseudoAcc_PseudoName
 #
+# table series State
+#     0: import from orthanc
+#     1: SeriesDescription AX/COR/SAG
+#     2: fatal_brain_seg OK
+#     3: selected to reconstruction
+#     4: reconstructoion OK
+#     5: no subject dir
+#     6: no template dir
+#     9: target stack
+#
 # \author     Xuchu Liu (xuchu_liu@rush.edu)
-# \date       03/14/2021
+# \date       03/27/2021
 #
 
 import sys
 import os
+import time
 import sqlite3
 from sqlite3.dbapi2 import Error
 
-if len(sys.argv) != 2:
+if len(sys.argv) < 3:
     print("""
 Batch process niftymic_run_reconstruction_pipeline.py according to series table. 
 
-Usage: %s seg_CurrentDate
+Usage: %s fetal_brain_seg CurrentDate_srr [arguments...]
 """ % (sys.argv[0]))
     exit(-1)
 
@@ -34,15 +45,18 @@ dbFile = "/mnt/Storage/Xuchu_Liu/orthanc/db-fetal/FetalMRIsqlite3.db"
 
 recon = "niftymic_run_reconstruction_pipeline --filenames "
 
-# seg = "python /mnt/Storage/Xuchu_Liu/Workspace/Python/NiftyMIC/MONAIfbs/monaifbs/fetal_brain_seg.py --input_names "
-
 input_path = sys.argv[1].rstrip('/')
+output_path = sys.argv[2].rstrip('/')
+arguments = ' '.join(sys.argv[3:])
 
-# SELECT State == 2 GROUP BY PseudoAcc
+#setup start time
+t0 = time.time()
+
+# SELECT State == 3 GROUP BY PseudoAcc
 def select_pseudoid_series(db_conn):
     table_select = f"""
             SELECT PseudoID, PseudoName, PseudoAcc
-            FROM series WHERE State = 2
+            FROM series WHERE State = 3
             GROUP BY PseudoAcc;
         """
     try: 
@@ -52,14 +66,14 @@ def select_pseudoid_series(db_conn):
     except Error as err:
         print('\033[1;35mSELECT', err, '. \033[0m')
 
-def select_id_series(db_conn, PseudoId):
+def select_id_series(db_conn, PseudoId, State):
     table_select = f"""
             SELECT Id, SeriesNumber, SeriesBrief, Height, Width
-            FROM series WHERE State = 2
+            FROM series WHERE State = ?
             AND PseudoID = ? ORDER BY SeriesNumber;
         """
     try:
-        select_rows = db_conn.cursor().execute(table_select, (PseudoId,)).fetchall()
+        select_rows = db_conn.cursor().execute(table_select, (State, PseudoId)).fetchall()
         for row in select_rows:
             seriesnumber_dict[row[0]] = str(row[1]) + '_' + row[2] + '_' + str(row[3]) + 'x' + str(row[4])
     except Error as err:
@@ -70,7 +84,7 @@ def update_state_series(db_conn, PseudoId, SeriesNumber, State) -> bool:
     table_update = f"""
             UPDATE series
             SET State = ?
-            WHERE State = 2 AND PseudoId = ? AND SeriesNumber = ?;
+            WHERE (State = 3 OR State = 9) AND PseudoId = ? AND SeriesNumber = ?;
         """
     try:
         db_conn.cursor().execute(table_update, (State, PseudoId, SeriesNumber))
@@ -86,7 +100,7 @@ def mkdirs(path):
 ##########
 conn = sqlite3.connect(dbFile)
 
-# SELECT State == 2
+# SELECT State == 3
 pseudoid_dict = {}
 select_pseudoid_series(conn)
 total_recon = 0
@@ -95,20 +109,17 @@ subject_recon = 0
 preproc_recon = 0
 for (key, value) in pseudoid_dict.items():
     # for each AccNumber
-    filenames_ax = list()
-    filenames_ax_masks = list()
-    filenames_sag = list()
-    filenames_sag_masks = list()
-    filenames_cor = list()
-    filenames_cor_masks = list()
+    filenames = list()
+    filenames_masks = list()
     acc_path = input_path + '/' + value
     if not os.path.exists(acc_path):
         continue
     else:
         total_recon = total_recon + 1
         # for each SerialNumber of current PseudoId
+        seg_file_size = 0
         seriesnumber_dict = {}
-        select_id_series(conn, key)
+        select_id_series(conn, key, '3')
         for (skey, svalue) in seriesnumber_dict.items():
             series_path = acc_path + '/' + svalue
             if not os.path.exists(series_path):
@@ -119,41 +130,24 @@ for (key, value) in pseudoid_dict.items():
                 seg_path = series_path + '/seg'
                 seg_file = seg_path + '/' + svalue + '_seg.nii.gz'
                 if os.path.isfile(nii_file) and os.path.isfile(seg_file):
-                    if svalue.find("_AX_") > 0:
-                        filenames_ax.append(str(nii_file))
-                        filenames_ax_masks.append(str(seg_file))
-                    if svalue.find("_SAG_") > 0:
-                        filenames_sag.append(str(nii_file))
-                        filenames_sag_masks.append(str(seg_file))
-                    if svalue.find("_COR_") > 0:
-                        filenames_cor.append(str(nii_file))
-                        filenames_cor_masks.append(str(seg_file))
-    # select the last ac/sag/cor
-    if len(filenames_ax) < 1:
-        print('\033[1;35mNo AX file error. \033[0m')
-        continue
-    if len(filenames_sag) < 1:
-        print('\033[1;35mNo SAG file error. \033[0m')
-        continue
-    if len(filenames_cor) < 1:
-        print('\033[1;35mNo COR file error. \033[0m')
-        continue
-    filenames = list()
-    filenames.append(filenames_ax[-1])
-    filenames.append(filenames_sag[-1])
-    filenames.append(filenames_cor[-1])
-    filenames_masks = list()
-    filenames_masks.append(filenames_ax_masks[-1])
-    filenames_masks.append(filenames_sag_masks[-1])
-    filenames_masks.append(filenames_cor_masks[-1])
+                    filenames.append(str(nii_file))
+                    filenames_masks.append(str(seg_file))
+                    seg_file_stats = os.stat(seg_file)
+                    if seg_file_stats.st_size > seg_file_size:
+                        seg_file_size = seg_file_stats.st_size
+                        target_file = nii_path + '/' + svalue + '.nii.gz'
+    arguments = arguments + ' --target-stack ' + str(target_file)
     # print(' '.join(map(str, filenames)))
     # print(' '.join(map(str, filenames_masks)))
-    srr_path = acc_path + '/srr'
-    log_file = acc_path + '/recon_log.txt'
+    mkdirs(output_path)
+    srr_path = output_path + '/' + value
+    mkdirs(srr_path)
+    log_file = srr_path + '/' + value + '_log.txt'
     print("Waitng... niftymic_run_reconstruction_pipeline ")
     reconcmd = recon + ' '.join(map(str, filenames)) + \
         ' --filenames-masks ' + ' '.join(map(str, filenames_masks)) + \
-        ' --dir-output ' + srr_path + ' | tee ' + log_file
+        ' --dir-output ' + srr_path + ' ' + arguments + ' 2>&1 | tee ' + log_file
+    # print(reconcmd) #Debug
     os.system(reconcmd)
     print("done!")
     recon_file = srr_path + '/recon_template_space/srr_template.nii.gz'
@@ -161,15 +155,16 @@ for (key, value) in pseudoid_dict.items():
         for filename in filenames:
             origFile = filename.rsplit("/",1)[1]
             number = origFile.split("_",1)[0]
-            update_state_series(conn, key, number, '3')
+            update_state_series(conn, key, number, '4')
         conn.commit()
         succ_recon = succ_recon + 1
+        os.system('mv ' + recon_file + ' ' + output_path + '/' + value + '_srr.nii.gz')
         print(recon_file + " OK.")
     elif os.path.exists(srr_path + "/recon_subject_space"):
         for filename in filenames:
             origFile = filename.rsplit("/",1)[1]
             number = origFile.split("_",1)[0]
-            update_state_series(conn, key, number, '4')
+            update_state_series(conn, key, number, '5')
         conn.commit()
         subject_recon = subject_recon + 1
         print('\033[1;35mCreate template ', recon_file, ' error. \033[0m')
@@ -177,11 +172,19 @@ for (key, value) in pseudoid_dict.items():
         for filename in filenames:
             origFile = filename.rsplit("/",1)[1]
             number = origFile.split("_",1)[0]
-            update_state_series(conn, key, number, '5')
+            update_state_series(conn, key, number, '6')
         conn.commit()
         preproc_recon = preproc_recon + 1
         print('\033[1;35mCreate subject ', recon_file, ' error. \033[0m')
 
+conn.close()
+
+#setup stop time
+t1 = time.time()
+total_time = t1-t0
+hours = int(total_time/3600)
+minutes = int((total_time - hours*3600)/60)
+seconds = total_time - hours*3600 - minutes*60
+print(f'Reconstruction took {hours:d}:{minutes:02d}:{seconds:.3f}')
 print('Total:' + str(total_recon) + ' Success:' + str(succ_recon) + \
     ' noTemplate:' + str(subject_recon) + ' noSubject:' + str(preproc_recon)) 
-conn.close()
