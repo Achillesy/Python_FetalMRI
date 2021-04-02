@@ -19,8 +19,9 @@ import numpy as np
 import time
 import fetaldb
 import nibabel as nib
-# from orthanc_rest_client import Orthanc
-# import imageio
+from orthanc_rest_client import Orthanc
+import pydicom
+import uuid
 
 if len(sys.argv) != 3:
     print("""
@@ -31,6 +32,8 @@ Usage: %s monaifbs_seg CurrentDate_dcm
     exit(-1)
 
 dbFile = "FetalMRIsqlite3.db"
+orthancSrv = "http://localhost:8042"
+orthanc_path = "/mnt/Storage/Xuchu_Liu/orthanc/db-v6/"
 
 monaifbs_path = sys.argv[1].rstrip('/')
 output_dcm_path = sys.argv[2].rstrip('/')
@@ -45,6 +48,7 @@ def mkdirs(path):
 ##########
 mkdirs(output_dcm_path)
 conn = fetaldb.FetalDB(dbFile)
+orthanc = Orthanc(orthancSrv, warn_insecure=False)
 
 # SELECT State == 1
 total_fbs = 0
@@ -62,7 +66,6 @@ for (key, value) in pseudoid_dict.items():
         monaifbs_series_path = monaifbs_acc_path + '/' + svalue
         output_series_path = output_acc_path + '/' + svalue
         mkdirs(output_series_path)
-        dcm_path = monaifbs_series_path + '/dcm'
         nii_path = monaifbs_series_path + '/nifti'
         seg_path = monaifbs_series_path + '/seg'
         nii_file = nii_path + '/' + svalue + '.nii.gz'
@@ -79,12 +82,27 @@ for (key, value) in pseudoid_dict.items():
                 brain_img_data = nii_img_data * seg_img_data[:,:,:,0]
                 (L, W, S) = brain_img_data.shape
                 TH100 = L*W/100
+                insts = orthanc.get_series_instances(skey)
                 for s in range(S):
                     brain_slice = brain_img_data[:,:,s]
                     if np.count_nonzero(brain_slice) > TH100:
                         # TODO save dcm
-
                         seg_count = seg_count + 1
+                        brain_slice = brain_slice.T
+                        brain_slice = brain_slice[::-1]
+                        for inst in insts:
+                            if s == (S - inst['IndexInSeries']):
+                                fileUUID = inst['FileUuid']
+                                raw_file = orthanc_path + fileUUID[0:2] + '/' + fileUUID[2:4] + '/' + fileUUID
+                                ds = pydicom.dcmread(raw_file)
+                                PatientName = str(ds.PatientName) + '_seg'
+                                ds.PatientName = PatientName
+                                ds.PatientID = str(uuid.uuid3(uuid.NAMESPACE_DNS, PatientName))
+                                arr = ds.pixel_array
+                                arr[:,:] = brain_slice[:,:]
+                                ds.PixelData = arr.tobytes()
+                                dcm_file = output_series_path + '/' + str(inst['IndexInSeries']) + '.dcm'
+                                ds.save_as(dcm_file)
                 if seg_count > 0:
                     print(seg_file + " OK.")
                     succ_dcm = succ_dcm + 1
@@ -95,66 +113,6 @@ for (key, value) in pseudoid_dict.items():
             else: # end if seg_img_size > 0
                 print(seg_file + " size=0.")
                 conn.update_series_state(skey, '0')
-
-
-
-
-        # os.system("find " + dcm_path + " -type l -delete")
-        # insts = orthanc.get_series_instances(skey)
-        # for inst in insts:
-        #     fileUUID = inst['FileUuid']
-        #     raw_file = orthanc_path + fileUUID[0:2] + '/' + fileUUID[2:4] + '/' + fileUUID
-        #     os.system("ln -s " + raw_file + ' ' + dcm_path + '/')
-        #     print('.', end='')
-        # print("done!")
-
-        # seg_path = series_path + '/seg'
-        # mkdirs(seg_path)
-        # nii_file = nii_path + '/' + svalue + '.nii.gz'
-        # seg_file = seg_path + '/' + svalue + '_seg.nii.gz'
-        # log_file = seg_path + '/' + svalue + '_log.txt'
-        # print("Waitng... fetal_brain_seg ")
-        # if os.path.isfile(nii_file):
-        #     segcmd = seg + nii_file + " --segment_output_names " + seg_file + " > " + log_file
-        #     os.system(segcmd)
-        #     print("done!")
-        # else:
-        #     print('\033[1;35m', nii_file, ' does not exists. \033[0m')
-
-        # if os.path.isfile(seg_file):
-        #     seg_img = nib.load(seg_file)
-        #     seg_img_data = seg_img.get_fdata()
-        #     # seg_img_size = len(np.nonzero(seg_img_data)[0])
-        #     seg_img_size = np.count_nonzero(seg_img_data)
-        #     if seg_img_size > 0:
-        #         nii_img = nib.load(nii_file)
-        #         nii_img_data = nii_img.get_fdata()
-        #         brain_img_data = nii_img_data * seg_img_data[:,:,:,0]
-        #         (L, W, S) = brain_img_data.shape
-        #         TH100 = L*W/100
-        #         # TH16 = L*W/16
-        #         # TH9 = L*W/9
-        #         Sel = '2'
-        #         for s in range(S):
-        #             brain_slice = brain_img_data[:,:,s]
-        #             if np.count_nonzero(brain_slice) > TH100:
-        #                 # Sel = '3'
-        #                 if 'AX' in svalue:
-        #                     imageio.imwrite(acc_ax_path + '/' + svalue + '_' + str(s) + '.png', brain_slice)
-        #                 elif 'SAG' in svalue:
-        #                     imageio.imwrite(acc_sag_path + '/' + svalue + '_' + str(s) + '.png', brain_slice)
-        #                 else:
-        #                     imageio.imwrite(acc_cor_path + '/' + svalue + '_' + str(s) + '.png', brain_slice)
-        #             # if np.count_nonzero(brain_slice) > TH9:
-        #             #     Sel = '9'
-        #         print(seg_file + " OK.")
-        #         succ_fbs = succ_fbs + 1
-        #         conn.update_series_state(skey, seg_img_size, Sel)
-        #     else:
-        #         conn.update_series_state(skey, seg_img_size, '0')
-        # else:
-        #     print('\033[1;35mCreate ', seg_file, ' error. \033[0m')
-
 conn.close()
 
 #setup stop time

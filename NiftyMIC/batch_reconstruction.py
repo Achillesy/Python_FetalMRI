@@ -70,14 +70,15 @@ def select_pseudoid_series(db_conn):
 
 def select_id_series(db_conn, PseudoId, State):
     table_select = f"""
-            SELECT Id, SeriesNumber, SeriesBrief, Height, Width
+            SELECT Id, SeriesNumber, SeriesBrief, Height, Width, SegCount
             FROM series WHERE State = ?
             AND PseudoID = ? ORDER BY SeriesNumber;
         """
     try:
         select_rows = db_conn.cursor().execute(table_select, (State, PseudoId)).fetchall()
         for row in select_rows:
-            seriesnumber_dict[row[0]] = str(row[1]) + '_' + row[2] + '_' + str(row[3]) + 'x' + str(row[4])
+            seriesnumber_dict[row[0]] = str(row[5]) + '_' + str(row[1]) + '_' + row[2] + \
+                '_' + str(row[3]) + 'x' + str(row[4])
     except Error as err:
         print('\033[1;35mSELECT', PseudoId, err, '. \033[0m')    
 
@@ -109,6 +110,7 @@ total_recon = 0
 succ_recon = 0
 subject_recon = 0
 preproc_recon = 0
+target_arg = ''
 for (key, value) in pseudoid_dict.items():
     # for each AccNumber
     filenames = list()
@@ -121,33 +123,40 @@ for (key, value) in pseudoid_dict.items():
         # for each SerialNumber of current PseudoId
         seriesnumber_dict = {}
         select_id_series(conn, key, '3')
+        maxCount = 0
+        target_arg = ''
         for (skey, svalue) in seriesnumber_dict.items():
-            series_path = acc_path + '/' + svalue
+            [sCount, sName] = svalue.split('_', 1)
+            series_path = acc_path + '/' + sName
             if not os.path.exists(series_path):
                 continue
             else:
                 nii_path = series_path + '/nifti'
-                nii_file = nii_path + '/' + svalue + '.nii.gz'
+                nii_file = nii_path + '/' + sName + '.nii.gz'
                 seg_path = series_path + '/seg'
-                seg_file = seg_path + '/' + svalue + '_seg.nii.gz'
+                seg_file = seg_path + '/' + sName + '_seg.nii.gz'
                 if os.path.isfile(nii_file) and os.path.isfile(seg_file):
                     filenames.append(str(nii_file))
                     filenames_masks.append(str(seg_file))
-        seriesnumber_dict = {}
-        select_id_series(conn, key, '9')
-        for (skey, svalue) in seriesnumber_dict.items():
-            series_path = acc_path + '/' + svalue
-            if not os.path.exists(series_path):
-                continue
-            else:
-                nii_path = series_path + '/nifti'
-                target_file = nii_path + '/' + svalue + '.nii.gz'
-                seg_path = series_path + '/seg'
-                seg_file = seg_path + '/' + svalue + '_seg.nii.gz'
-                if os.path.isfile(target_file) and os.path.isfile(seg_file):
-                    filenames.append(str(target_file))
-                    filenames_masks.append(str(seg_file))
-                    arguments = arguments + ' --target-stack ' + str(target_file)
+                    tempCount = int(sCount)
+                    if tempCount > maxCount:
+                        maxCount = tempCount
+                        target_arg = ' --target-stack ' + str(nii_file)
+        # seriesnumber_dict = {}
+        # select_id_series(conn, key, '9')
+        # for (skey, svalue) in seriesnumber_dict.items():
+        #     series_path = acc_path + '/' + svalue
+        #     if not os.path.exists(series_path):
+        #         continue
+        #     else:
+        #         nii_path = series_path + '/nifti'
+        #         target_file = nii_path + '/' + svalue + '.nii.gz'
+        #         seg_path = series_path + '/seg'
+        #         seg_file = seg_path + '/' + svalue + '_seg.nii.gz'
+        #         if os.path.isfile(target_file) and os.path.isfile(seg_file):
+        #             filenames.append(str(target_file))
+        #             filenames_masks.append(str(seg_file))
+        #             arguments = arguments + ' --target-stack ' + str(target_file)
     # print(' '.join(map(str, filenames)))
     # print(' '.join(map(str, filenames_masks)))
     mkdirs(output_path)
@@ -157,7 +166,8 @@ for (key, value) in pseudoid_dict.items():
     print("Waitng... niftymic_run_reconstruction_pipeline ")
     reconcmd = recon + ' '.join(map(str, filenames)) + \
         ' --filenames-masks ' + ' '.join(map(str, filenames_masks)) + \
-        ' --dir-output ' + srr_path + ' ' + arguments + ' 2>&1 | tee ' + log_file
+        ' --dir-output ' + srr_path + target_arg + ' ' + arguments + \
+        ' 2>&1 | tee ' + log_file
     # print(reconcmd) #Debug
     os.system(reconcmd)
     print("done!")
@@ -193,14 +203,15 @@ for (key, value) in pseudoid_dict.items():
         subject_path = srr_path + '/recon_subject_space/'
         subject_file = subject_path + 'srr_subject.nii.gz'
         mask_file = subject_path + 'srr_subject_mask.nii.gz'
-        subject_img = nib.load(subject_file)
-        subject_img_data = subject_img.get_fdata()
-        mask_img = nib.load(mask_file)
-        mask_img_data = mask_img.get_fdata()
-        fetal_img_data = subject_img_data * mask_img_data
-        fetal_img = nib.Nifti1Pair(fetal_img_data, np.eye(4))
-        fetal_file = output_path + '/' + value + '_subject.nii.gz'
-        nib.save(fetal_img, fetal_file)
+        if os.path.isfile(subject_file) and os.path.isfile(mask_file):
+            subject_img = nib.load(subject_file)
+            subject_img_data = subject_img.get_fdata()
+            mask_img = nib.load(mask_file)
+            mask_img_data = mask_img.get_fdata()
+            fetal_img_data = subject_img_data * mask_img_data
+            fetal_img = nib.Nifti1Pair(fetal_img_data, np.eye(4))
+            fetal_file = output_path + '/' + value + '_subject.nii.gz'
+            nib.save(fetal_img, fetal_file)
 
 conn.close()
 
