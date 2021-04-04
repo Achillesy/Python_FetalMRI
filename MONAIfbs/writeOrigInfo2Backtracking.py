@@ -22,13 +22,13 @@ Usage: %s original_info.csv
     exit(-1)
 
 dbFile = "FetalMRIsqlite3.db"
-
+info_file = sys.argv[1]
 
 ##########
 conn = fetaldb.FetalDB(dbFile)
 
 # INSERT default State = 0
-cfile = open(sys.argv[1], 'r')
+cfile = open(info_file, 'r')
 rows = csv.reader(cfile)
 num = 0
 succ = 0

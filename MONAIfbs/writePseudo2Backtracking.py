@@ -27,18 +27,20 @@
 
 import os
 import sys
-import os.path
-import sqlite3
-from sqlite3.dbapi2 import Error
-import csv
-import pydicom
-import SimpleITK as sitk
+import fetaldb
+from openpyxl import load_workbook
 
-csvOrigFile = '../FetalData/20210301/Fetal_MRI_Research_Cases_Normal_Brain.csv'
-csvAccFile = '../FetalData/20210301/Accession number lookup.csv'
-dicomPath = '../FetalData/20210301'
+if len(sys.argv) != 3:
+    print("""
+Write fseudo info to backtracking table. 
+
+Usage: %s fseudo_info.xslx sheetname
+""" % (sys.argv[0]))
+    exit(-1)
 
 dbFile = "FetalMRIsqlite3.db"
+xlsxname = sys.argv[1]
+sheetname = sys.argv[2]
 
 #UPDATE
 def update_backtracking(db_conn, PseudoAcc, PseudoName, PseudoID, OrigAcc) -> bool:
