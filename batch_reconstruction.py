@@ -41,7 +41,7 @@ Usage: %s fetal_brain_seg CurrentDate_srr [arguments...]
 """ % (sys.argv[0]))
     exit(-1)
 
-dbFile = "/mnt/Storage/Xuchu_Liu/orthanc/db-fetal/FetalMRIsqlite3.db"
+dbFile = "FetalMRIsqlite3.db"
 
 recon = "niftymic_run_reconstruction_pipeline --filenames "
 

@@ -133,3 +133,4 @@ Patient_*
 *.db
 *.xlsx
 *.txt
+.DS_Store

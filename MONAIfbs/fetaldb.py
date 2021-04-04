@@ -29,7 +29,7 @@ class FetalDB:
     def __exit__(self, exc_type, exc_value, traceback):
         self.close()
 
-    ## SELECT State == 1 GROUP BY PseudoAcc
+    ## SELECT Series State == 1 GROUP BY PseudoAcc
     def select_series_pseudoid(self, state):
         pseudoid_dict = {}
         table_select = f"""
@@ -61,7 +61,7 @@ class FetalDB:
             print('\033[1;35mSELECT', PseudoId, err, '. \033[0m')
         return seriesnumber_dict
 
-    #UPDATE
+    ## UPDATE Series State
     def update_series_state(self, seriesId, state) -> bool:
         table_update = f"""
                 UPDATE series
@@ -75,7 +75,7 @@ class FetalDB:
             print('\033[1;35mUPDATE State of ', seriesId, err, '. \033[0m')
             return False
 
-    #UPDATE
+    ## UPDATE Series SegCount
     def update_series_segcount(self, seriesId, segcount) -> bool:
         table_update = f"""
                 UPDATE series
@@ -89,7 +89,7 @@ class FetalDB:
             print('\033[1;35mUPDATE State of ', seriesId, err, '. \033[0m')
             return False
 
-    #UPDATE
+    ## UPDATE Series State by Reconstruction Result
     def update_series_state_recon(self, pseudoAcc, seriesNum, state) -> bool:
         table_update = f"""
                 UPDATE series
@@ -101,4 +101,17 @@ class FetalDB:
             return True
         except sqlite3.Error as err:
             print('\033[1;35mUPDATE ', pseudoAcc, seriesNum, err, '. \033[0m')
+            return False
+
+    ## INSERT Origal Infomation from CSV
+    def insert_backtracking(self, OrigName, OrigMR, OrigAcc, OrigGA) -> bool:
+        table_insert = f"""
+                INSERT INTO backtracking(OrigName, OrigMR, OrigAcc, OrigGA)
+                VALUES (?, ?, ?, ?);
+            """
+        try:
+            self.cursor.execute(table_insert, (OrigName, OrigMR, OrigAcc, OrigGA))
+            return True
+        except sqlite3.Error as err:
+            print('\033[1;35mINSERT ', OrigName, OrigMR, OrigAcc, err, '. \033[0m')
             return False
