@@ -19,8 +19,8 @@
 #     2: fatal_brain_seg OK
 #     3: selected to reconstruction
 #     4: reconstructoion OK
-#     5: no subject dir
-#     6: no template dir
+#     5: no template dir
+#     6: no subject dir
 #     9: target stack
 #
 # \author     Xuchu Liu (xuchu_liu@rush.edu)
@@ -185,7 +185,7 @@ for (key, value) in pseudoid_dict.items():
         for filename in filenames:
             origFile = filename.rsplit("/",1)[1]
             number = origFile.split("_",1)[0]
-            update_state_series(conn, key, number, '5')
+            update_state_series(conn, key, number, '6')
         conn.commit()
         subject_recon = subject_recon + 1
         print('\033[1;35mCreate template ', recon_file, ' error. \033[0m')
@@ -193,25 +193,25 @@ for (key, value) in pseudoid_dict.items():
         for filename in filenames:
             origFile = filename.rsplit("/",1)[1]
             number = origFile.split("_",1)[0]
-            update_state_series(conn, key, number, '6')
+            update_state_series(conn, key, number, '5')
         conn.commit()
         preproc_recon = preproc_recon + 1
         print('\033[1;35mCreate subject ', recon_file, ' error. \033[0m')
 
 
-    if os.path.exists(srr_path + "/recon_subject_space"):
-        subject_path = srr_path + '/recon_subject_space/'
-        subject_file = subject_path + 'srr_subject.nii.gz'
-        mask_file = subject_path + 'srr_subject_mask.nii.gz'
-        if os.path.isfile(subject_file) and os.path.isfile(mask_file):
-            subject_img = nib.load(subject_file)
-            subject_img_data = subject_img.get_fdata()
-            mask_img = nib.load(mask_file)
-            mask_img_data = mask_img.get_fdata()
-            fetal_img_data = subject_img_data * mask_img_data
-            fetal_img = nib.Nifti1Pair(fetal_img_data, np.eye(4))
-            fetal_file = output_path + '/' + value + '_subject.nii.gz'
-            nib.save(fetal_img, fetal_file)
+    # if os.path.exists(srr_path + "/recon_subject_space"):
+    #     subject_path = srr_path + '/recon_subject_space/'
+    #     subject_file = subject_path + 'srr_subject.nii.gz'
+    #     mask_file = subject_path + 'srr_subject_mask.nii.gz'
+    #     if os.path.isfile(subject_file) and os.path.isfile(mask_file):
+    #         subject_img = nib.load(subject_file)
+    #         subject_img_data = subject_img.get_fdata()
+    #         mask_img = nib.load(mask_file)
+    #         mask_img_data = mask_img.get_fdata()
+    #         fetal_img_data = subject_img_data * mask_img_data
+    #         fetal_img = nib.Nifti1Pair(fetal_img_data, np.eye(4))
+    #         fetal_file = output_path + '/' + value + '_subject.nii.gz'
+    #         nib.save(fetal_img, fetal_file)
 
 conn.close()
 
