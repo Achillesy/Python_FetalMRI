@@ -77,6 +77,22 @@ for (key, value) in pseudoid_dict.items():
             # seg_img_size = len(np.nonzero(seg_img_data)[0])
             seg_img_size = np.count_nonzero(seg_img_data)
             if seg_img_size > 0:
+                # Extended border Start
+                board = np.nonzero(seg_img_data)
+                (X, Y, Z, Tmp) = seg_img_data.shape
+                minX, maxX = min(board[0])-10, max(board[0])+10
+                minY, maxY = min(board[1])-10, max(board[1])+10
+                minZ, maxZ = min(board[2]), max(board[2])
+                if minX<0:
+                    minX = 0
+                if maxX>X:
+                    maxX = X
+                if minY<0:
+                    minY = 0
+                if maxY>Y:
+                    maxY = Y
+                seg_img_data[minX:maxX+1, minY:maxY+1, minZ:maxZ+1, :] = 1
+                # Extended border End
                 nii_img = nib.load(nii_file)
                 nii_img_data = nii_img.get_fdata()
                 brain_img_data = nii_img_data * seg_img_data[:,:,:,0]
