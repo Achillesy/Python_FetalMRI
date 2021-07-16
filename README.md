@@ -5,11 +5,11 @@ https://github.com/gift-surg/NiftyMIC
 https://github.com/gift-surg/MONAIfbs
 
 
-  - Get docx from radiologist
-  - /FetalMRI/MONAIfbs/docx2csv patient.docx patient.csv
-  - /FetalMRI/MONAIfbs/writeOrigInfo2Backtracking.py patient.csv
-  - Get anonymize PACS and pseudo.xlsx
-  - /FetalMRI/MONAIfbs/xlsx2csv pseudo.xlsx pseudo.csv (no need)
+  - Get docx from radiologist 得到用户相关资料
+  - /FetalMRI/MONAIfbs/docx2csv patient.docx patient.csv 把docx转换为csv格式
+  - /FetalMRI/MONAIfbs/writeOrigInfo2Backtracking.py patient.csv 把用户原始信息导入数据库
+  - Get anonymize PACS and pseudo.xlsx 从PACS下载用户数据并获得匿名对照表
+  - /FetalMRI/MONAIfbs/xlsx2csv pseudo.xlsx pseudo.csv (no need) 把xlsx转换为csv格式
 
 ```
 ├── manage_orthanc
@@ -19,15 +19,15 @@ https://github.com/gift-surg/MONAIfbs
 │   ├── batch_fetal_brain_png.py
 │   ├── batch_fetal_brain_seg.py
 │   ├── batch_subject_space.py
-│   ├── docx2csv.py
-│   ├── fetaldb.py
+│   ├── docx2csv.py                   把docx转换为csv格式
+│   ├── fetaldb.py
 │   ├── set_select_flag.py
 │   ├── shownii.py
 │   ├── tableBacktracking.py
 │   ├── testPyDicom.py
-│   ├── writeOrigInfo2Backtracking.py
+│   ├── writeOrigInfo2Backtracking.py 把用户原始信息导入数据库
 │   ├── writePseudo2Backtracking.py
-│   └── xlsx2csv.py
+│   └── xlsx2csv.py                   把xlsx转换为csv格式
 ├── NiftyMIC
 │   └── batch_reconstruction.py 
 ├── batch_fetal_brain_seg.py
