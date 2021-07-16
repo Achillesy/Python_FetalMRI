@@ -39,3 +39,38 @@ https://github.com/gift-surg/MONAIfbs
 ├── tableSeries.py
 └── writeOrthancInfo2Series.py
 ```
+
+## 数据结构
+```sqlite
+CREATE TABLE "backtracking" (
+	"Id"	INTEGER,
+	"OrigName"	TEXT,
+	"OrigMR"	TEXT,
+	"OrigAcc"	TEXT UNIQUE,
+	"OrigGA"	TEXT,
+	"PseudoAcc"	TEXT UNIQUE,
+	"PseudoID"	TEXT UNIQUE,
+	"PseudoName"	TEXT,
+	"State"	INTEGER DEFAULT 0,
+	PRIMARY KEY("Id" AUTOINCREMENT)
+);
+
+CREATE TABLE "series" (
+	"Id"	TEXT,
+	"PseudoID"	TEXT,
+	"PseudoName"	TEXT,
+	"PseudoAcc"	TEXT,
+	"SeriesNumber"	INTEGER,
+	"SeriesBrief"	TEXT,
+	"SeriesDescription"	TEXT,
+	"AcquisitionMatrix"	TEXT,
+	"Rows"	INTEGER,
+	"Columns"	INTEGER,
+	"PixelSpacing"	TEXT,
+	"Height"	INTEGER,
+	"Width"	INTEGER,
+	"SegCount"	INTEGER DEFAULT 0,
+	"State"	INTEGER DEFAULT 0,
+	PRIMARY KEY("Id")
+);
+```
