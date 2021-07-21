@@ -31,6 +31,8 @@ https://github.com/gift-surg/MONAIfbs
 │   └── xlsx2csv.py                   把xlsx转换为csv格式
 ├── NiftyMIC
 │   └── batch_reconstruction.py       批量生成3D模型
+├── UNet
+│   └── get_seg_info.py               从XXX_seg.nii.gz中提取seg信息到XXX_seg_info.json
 ├── batch_fetal_brain_seg.py          旧版使用dcm2niix把序列转换为nii.gz，然后执行fetal_brain_seg分割
 ├── batch_reconstruction.py           老版批量生成3D模型
 ├── batch_target_recon.py             旧版批量生成3D模型
