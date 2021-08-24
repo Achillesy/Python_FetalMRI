@@ -48,6 +48,6 @@ for f in allfilelist:
             SegHeight = maxY - minY + 1
             json_txt = '{{"SegX":{},"SegWidth":{},"SegY":{},"SegHeight":{},"SegCount":{}}}'.format(SegX, SegWidth, SegY, SegHeight, SegCount)
             print(json_txt)
-            json_file = seg_file.replace('_seg.nii.gz', '_seg.json')
+            json_file = seg_file.replace('_seg.nii.gz', '_seg_info.json')
             with open(json_file, 'w') as jf:
                 jf.write(json_txt)

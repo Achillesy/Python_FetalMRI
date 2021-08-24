@@ -12,7 +12,7 @@ import os
 curDir = os.walk('./')
 
 d2n = "dcm2niix -f "
-para = ' -i y -l y -p y -x y -v y -z y -o '
+para = ' -a y -z y -o '
 
 seg = "python /mnt/Storage/Xuchu_Liu/Workspace/Python/NiftyMIC/MONAIfbs/monaifbs/fetal_brain_seg.py --input_names "
 
@@ -26,7 +26,8 @@ for path, dir_list, file_list in curDir:
 sag_brain_list = list()
 for series_Desc in series_list:
     series_lower = series_Desc.lower()
-    if ('brain' in series_lower) and ('sag' in series_lower):
+    # if ('brain' in series_lower) and ('sag' in series_lower):
+    if ('sag' in series_lower):
         sag_brain_list.append(series_Desc)
 
 for series_path in sag_brain_list:
@@ -51,4 +52,3 @@ for series_path in sag_brain_list:
         print(seg_file + " OK.")
     else:
         print('\033[1;35mCreate ', seg_file, ' error. \033[0m')
-
