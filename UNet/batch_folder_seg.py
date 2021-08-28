@@ -8,6 +8,12 @@
 #
 
 import os
+import json
+import uuid
+
+import numpy as np
+import nibabel as nib
+import pydicom
 
 curDir = os.walk('./')
 
@@ -25,15 +31,30 @@ for path, dir_list, file_list in curDir:
 
 sag_brain_list = list()
 for series_Desc in series_list:
-    series_lower = series_Desc.lower()
-    # if ('brain' in series_lower) and ('sag' in series_lower):
-    if ('sag' in series_lower):
+    series_upper = series_Desc.upper()
+    # if ('brain' in series_upper) and ('sag' in series_upper):
+    if ('SAG' in series_upper):
         sag_brain_list.append(series_Desc)
 
 for series_path in sag_brain_list:
     # './exam_000016/series004_SAG BrainT2 HASTE BH'
-    svalue = series_path.split('/')[-1]
-    svalue = svalue.split('_')[0]
+    dcm_list = os.listdir(series_path)
+    dcm_list = list(filter(lambda x: '.dcm' in x, dcm_list))
+    dcm_list.sort()
+    dcm_first = os.path.join(series_path, dcm_list[0])
+    ds_first = pydicom.dcmread(dcm_first, force=True)
+    sliceLoc_first = ds_first.SliceLocation
+    accession = ds_first.AccessionNumber
+    series = '%02d' % (ds_first.SeriesNumber)
+    seriesName = accession + '_' + series
+    dcm_last = os.path.join(series_path, dcm_list[-1])
+    ds_last = pydicom.dcmread(dcm_last, force=True)
+    sliceLoc_last  = ds_last.SliceLocation
+    if sliceLoc_first < sliceLoc_last:
+        svalue = seriesName + '_pos'
+    else:
+        dcm_list.reverse()
+        svalue = seriesName + '_rev'
     # convert *.dicom to SerialNumber_AX_HxW.nii.gz
     d2ncmd = d2n + svalue + para + '"' + series_path + '" "' + series_path + '" > /dev/null'
     print(d2ncmd)
@@ -49,6 +70,45 @@ for series_path in sag_brain_list:
     else:
         print('\033[1;35m', nii_file, ' does not exists. \033[0m')
     if os.path.isfile(seg_file):
-        print(seg_file + " OK.")
+        seg_img = nib.load(seg_file)
+        seg_img_data = seg_img.get_fdata()
+        seg_img_size = np.count_nonzero(seg_img_data)
+        if seg_img_size > 0:
+            # Extended border Start
+            print(seg_file + " OK.")
+            seg_img_data = np.squeeze(seg_img_data)
+            X, Y, Z = seg_img_data.shape
+            X = X - 1
+            Y = Y - 1
+            txt = {}
+            # txt['PseudoAcc'] = accession
+            # txt['SeriesNumber'] = series
+            for i in range(seg_img_data.shape[-1]):
+                seg_img_size_cur = np.count_nonzero(seg_img_data[:,:,i])
+                if seg_img_size_cur > 0:
+                    dcm_cur = os.path.join(series_path, dcm_list[i])
+                    ds_cur = pydicom.dcmread(dcm_cur, force=True)
+                    instance = '%02d' % (ds_cur.InstanceNumber)
+                    instanceName = seriesName + '_' + instance
+                    Id = str(uuid.uuid3(uuid.NAMESPACE_DNS, instanceName))
+                    txt[Id] = {}
+                    board = np.nonzero(seg_img_data[:,:,i])
+                    minX, maxX = min(board[0]), max(board[0])
+                    minY, maxY = min(board[1]), max(board[1])
+                    SegX = minX
+                    SegWidth = maxX - minX + 1
+                    SegY = Y - maxY
+                    SegHeight = maxY - minY + 1
+                    txt[Id]['SegX'] = int(SegX)
+                    txt[Id]['SegWidth'] = int(SegWidth)
+                    txt[Id]['SegY'] = int(SegY)
+                    txt[Id]['SegHeight'] = int(SegHeight)
+            json_code = json.dumps(txt)
+            json_file = seg_file.replace('_seg.nii.gz', '_seg_info.json')
+            with open(json_file, 'w') as jf:
+                jf.write(json_code)
+            print(json_code)
+        else:
+            print('\033[1;The ', seg_file, ' has zero size. \033[0m')
     else:
         print('\033[1;35mCreate ', seg_file, ' error. \033[0m')

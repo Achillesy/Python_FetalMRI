@@ -16,7 +16,7 @@
 #   "State"	    INTEGER DEFAULT 0,
 #   PRIMARY KEY("Id" AUTOINCREMENT)
 # );
-#
+# Accession number lookup.csv (from xlsx)
 # State:
 #   0: insert original info
 #   1: update pseduo info
@@ -27,86 +27,39 @@
 
 import os
 import sys
-import fetaldb
-from openpyxl import load_workbook
+sys.path.append('/mnt/Storage/Xuchu_Liu/Workspace/Python/FetalMRI')
+import csv
+from itertools import islice
+from lib.fetaldb import FetalDB
+# from openpyxl import load_workbook
 
-if len(sys.argv) != 3:
+if len(sys.argv) != 2:
     print("""
 Write fseudo info to backtracking table. 
 
-Usage: %s fseudo_info.xslx sheetname
+Usage: %s fseudo_info.csv
 """ % (sys.argv[0]))
     exit(-1)
 
-dbFile = "FetalMRIsqlite3.db"
-xlsxname = sys.argv[1]
-sheetname = sys.argv[2]
-
-#UPDATE
-def update_backtracking(db_conn, PseudoAcc, PseudoName, PseudoID, OrigAcc) -> bool:
-    table_update = f"""
-            UPDATE backtracking
-            SET PseudoAcc = ?,
-            PseudoName = ?,
-            PseudoID = ?,
-            State = 1
-            WHERE OrigAcc = ?;
-        """
-    try:
-        db_conn.cursor().execute(table_update, \
-            (PseudoAcc, PseudoName, PseudoID, OrigAcc))
-        return True
-    except Error as err:
-        print('\033[1;35mUPDATE ', PseudoAcc, PseudoName, OrigAcc, err, '. \033[0m')
-        return False
-
-def update_csv_to_backtracking(db_conn, filename):
-    cfile = open(filename, 'r')
-    rows = csv.reader(cfile)
-    for row in rows:
-        PseudoAcc = row[0].zfill(6)
-        if update_backtracking(db_conn, PseudoAcc, row[2], row[3], row[1]):
-            print('UPDATE ' + row[2] + ' success.')
-    cfile.close()
-
-# SELECT
-acc_dict = {}
-def select_backtracking(db_conn):
-    table_select = f"""
-            SELECT PseudoAcc, PseudoName, PseudoID
-            FROM backtracking WHERE State > 0;
-        """
-    try: 
-        select_rows = db_conn.cursor().execute(table_select).fetchall()
-        for row in select_rows:
-            acc_dict[row[0]] = [row[1], row[2]]
-    except Error as err:
-        print('\033[1;35mSELECT ', err, '. \033[0m')
-
-def modify_DicomTag(filename):
-    if filename.endswith(".dcm"):
-        ds = pydicom.dcmread(filename)
-        pseduoAcc = ds.AccessionNumber
-        ds.PatientName = acc_dict[pseduoAcc][0]
-        ds.PatientID = acc_dict[pseduoAcc][1]
-        print(pseduoAcc, ds.PatientName, ds.PatientID)
-        ds.save_as(filename)
+dbFile = "/mnt/Storage/Xuchu_Liu/Workspace/Python/FetalMRI/FetalMRIsqlite3.db"
+info_file = sys.argv[1]
 
 ##########
-conn = sqlite3.connect(dbFile)
+conn = FetalDB(dbFile)
 
 # UPDATE State = 1
 #update_csv_to_backtracking(conn, csvAccFile)
-#conn.commit()
+cfile = open(info_file, 'r')
+rows = csv.reader(cfile)
+num = 0
+succ = 0
+for row in islice(rows, 0, None): #(iterable, start, stop[, step])
+    num = num + 1
+    PseudoAcc = row[0].zfill(6)
+    if conn.update_backtracking(row[1], PseudoAcc, row[2]):
+        print('UPDATE ' + row[2] + ' success.')
+        succ = succ + 1
+cfile.close()
 
-# SELECT State > 0
-select_backtracking(conn)
-if os.path.isfile(dicomPath):
-    modify_DicomTag(dicomPath)
-else:
-    # Recursively modify a directory
-    for root, dirs, files in os.walk(dicomPath):
-        for f in files:
-            modify_DicomTag(os.path.join(root, f))
-
+print("Total %d of %d pseudo info update to backtracking table." % (succ, num))
 conn.close()

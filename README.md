@@ -13,6 +13,9 @@ https://github.com/gift-surg/MONAIfbs
 
 ## 文件列表
 ```
+├── lib
+│   ├── __init__.py
+│   └── fetaldb.py                    操作数据库lib
 ├── manage_orthanc
 │   └── writeCsv2Track.py             老版writeOrigInfo2Backtracking.py
 ├── MONAIfbs
@@ -21,7 +24,6 @@ https://github.com/gift-surg/MONAIfbs
 │   ├── batch_fetal_brain_seg.py      使用dcm2niix把序列转换为nii.gz，然后执行fetal_brain_seg分割
 │   ├── batch_subject_space.py        批量生成3D模型（不做位置矫正）
 │   ├── docx2csv.py                   把docx转换为csv格式
-│   ├── fetaldb.py                    操作数据库lib
 │   ├── set_select_flag.py            手动修改数据库中的serias状态
 │   ├── shownii.py                    显示nii.gz文件
 │   ├── tableBacktracking.py          旧版批量修改dcm的PatientName, PatientID
@@ -32,10 +34,12 @@ https://github.com/gift-surg/MONAIfbs
 ├── NiftyMIC
 │   └── batch_reconstruction.py       批量生成3D模型
 ├── UNet
+│   ├── batch_dcm2jpg.py              把目录下的dcm转jpg
 │   ├── batch_folder_seg.py           遍历目录生成_seg.nii.gz文件
 │   ├── batch_prepare_dcms.py         筛选适合标注的dcm文件
 │   ├── get_seg_info.py               从XXX_seg.nii.gz中提取seg信息到XXX_seg_info.json
-│   └── writePseudo2Dicom             将虚拟的用户名和AccNumber写入目录下的dcm文件
+│   ├── writeDicom2Instance.py        
+│   └── writePseudo2Dicom.py          将虚拟的用户名和AccNumber写入目录下的dcm文件
 ├── batch_fetal_brain_seg.py          旧版使用dcm2niix把序列转换为nii.gz，然后执行fetal_brain_seg分割
 ├── batch_reconstruction.py           老版批量生成3D模型
 ├── batch_target_recon.py             旧版批量生成3D模型
