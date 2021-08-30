@@ -38,8 +38,9 @@ https://github.com/gift-surg/MONAIfbs
 │   ├── batch_folder_seg.py           遍历目录生成_seg.nii.gz文件
 │   ├── batch_prepare_dcms.py         筛选适合标注的dcm文件
 │   ├── get_seg_info.py               从XXX_seg.nii.gz中提取seg信息到XXX_seg_info.json
-│   ├── writeDicom2Instance.py        
-│   └── writePseudo2Dicom.py          将虚拟的用户名和AccNumber写入目录下的dcm文件
+│   ├── writeDicom2Instance.py        把dicom信息写入instance
+│   ├── writePseudo2Dicom.py          将虚拟的用户名和AccNumber写入目录下的dcm文件
+│   └── writeSegInfo2Instance.py      将segment信息写入instance
 ├── batch_fetal_brain_seg.py          旧版使用dcm2niix把序列转换为nii.gz，然后执行fetal_brain_seg分割
 ├── batch_reconstruction.py           老版批量生成3D模型
 ├── batch_target_recon.py             旧版批量生成3D模型
@@ -79,6 +80,26 @@ CREATE TABLE "series" (
 	"Height"	INTEGER,
 	"Width"	INTEGER,
 	"SegCount"	INTEGER DEFAULT 0,
+	"State"	INTEGER DEFAULT 0,
+	PRIMARY KEY("Id")
+);
+
+CREATE TABLE "instance" (
+	"Id"	TEXT,
+	"DicomPath"	TEXT NOT NULL,
+	"PseudoAcc"	TEXT NOT NULL,
+	"SeriesNumber"	INTEGER NOT NULL,
+	"InstanceNumber"	INTEGER NOT NULL,
+	"SliceLocation"	REAL DEFAULT 0,
+	"SeriesBrief"	TEXT,
+	"Rows"	TEXT DEFAULT 512,
+	"Columns"	INTEGER DEFAULT 512,
+	"PixelSpacing1"	REAL NOT NULL,
+	"PixelSpacing2"	REAL NOT NULL,
+	"SegX"	INTEGER DEFAULT 0,
+	"SegWidth"	INTEGER DEFAULT 0,
+	"SegY"	INTEGER DEFAULT 0,
+	"SegHeight"	INTEGER DEFAULT 0,
 	"State"	INTEGER DEFAULT 0,
 	PRIMARY KEY("Id")
 );

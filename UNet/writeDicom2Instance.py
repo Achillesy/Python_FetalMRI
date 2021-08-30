@@ -40,7 +40,7 @@ dcm_path_1 = "/home/achilles/Workspace/DataSet/FetalData/20210301_asher"
 dcm_path_2 = "/home/achilles/Workspace/DataSet/FetalData/20210819_asher"
 dcm_path_t = "/home/achilles/Workspace/DataSet/FetalData/20210824_test"
 
-curFolder = os.walk(dcm_path_t)
+curFolder = os.walk(dcm_path_1)
 
 # ##########
 conn = FetalDB(dbFile)
@@ -63,6 +63,7 @@ for path, dir_list, file_list in curFolder:
                 instanceId = str(uuid.uuid3(uuid.NAMESPACE_DNS, instanceName))
                 sliceLoc = ds.SliceLocation
                 seriesDescU = ds.SeriesDescription.upper()
+                seriesBrief=''
                 if 'AX' in seriesDescU:
                     seriesBrief = 'AX'
                 if 'SAG' in seriesDescU:
