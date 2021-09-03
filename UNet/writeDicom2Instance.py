@@ -40,7 +40,7 @@ dcm_path_1 = "/home/achilles/Workspace/DataSet/FetalData/20210301_asher"
 dcm_path_2 = "/home/achilles/Workspace/DataSet/FetalData/20210819_asher"
 dcm_path_t = "/home/achilles/Workspace/DataSet/FetalData/20210824_test"
 
-curFolder = os.walk(dcm_path_1)
+curFolder = os.walk(dcm_path_2)
 
 # ##########
 conn = FetalDB(dbFile)
@@ -61,7 +61,6 @@ for path, dir_list, file_list in curFolder:
                 instance = '%02d' % (ds.InstanceNumber)
                 instanceName = accession + '_' + series + '_' + instance
                 instanceId = str(uuid.uuid3(uuid.NAMESPACE_DNS, instanceName))
-                sliceLoc = ds.SliceLocation
                 seriesDescU = ds.SeriesDescription.upper()
                 seriesBrief=''
                 if 'AX' in seriesDescU:
@@ -73,7 +72,7 @@ for path, dir_list, file_list in curFolder:
                 rows = ds.Rows
                 columns = ds.Columns
                 pixelSpacing1, pixelSpacing2 = ds.PixelSpacing
-                if conn.insert_instance(instanceId, dcm_file, accession, series, instance, sliceLoc, seriesBrief, rows, columns, pixelSpacing1, pixelSpacing2):
+                if conn.insert_instance(instanceId, dcm_file, accession, series, instance, seriesBrief, rows, columns, pixelSpacing1, pixelSpacing2):
                     print('INSERT ' + accession + ' success.')
                     succ = succ + 1
             except  Exception as e:

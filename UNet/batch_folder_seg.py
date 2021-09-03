@@ -18,7 +18,7 @@ import pydicom
 curDir = os.walk('./')
 
 d2n = "dcm2niix -f "
-para = ' -a y -z y -o '
+para = ' -i y -x y -m y -v y -z y -o '
 
 seg = "python /mnt/Storage/Xuchu_Liu/Workspace/Python/NiftyMIC/MONAIfbs/monaifbs/fetal_brain_seg.py --input_names "
 
@@ -33,7 +33,7 @@ sag_brain_list = list()
 for series_Desc in series_list:
     series_upper = series_Desc.upper()
     # if ('brain' in series_upper) and ('sag' in series_upper):
-    if ('SAG' in series_upper):
+    if ('AX' in series_upper):
         sag_brain_list.append(series_Desc)
 
 for series_path in sag_brain_list:
@@ -43,32 +43,41 @@ for series_path in sag_brain_list:
     dcm_list.sort()
     dcm_first = os.path.join(series_path, dcm_list[0])
     ds_first = pydicom.dcmread(dcm_first, force=True)
-    sliceLoc_first = ds_first.SliceLocation
     accession = ds_first.AccessionNumber
     series = '%02d' % (ds_first.SeriesNumber)
     seriesName = accession + '_' + series
-    dcm_last = os.path.join(series_path, dcm_list[-1])
-    ds_last = pydicom.dcmread(dcm_last, force=True)
-    sliceLoc_last  = ds_last.SliceLocation
-    if sliceLoc_first < sliceLoc_last:
-        svalue = seriesName + '_pos'
-    else:
-        dcm_list.reverse()
-        svalue = seriesName + '_rev'
-    # convert *.dicom to SerialNumber_AX_HxW.nii.gz
+    svalue = seriesName
+    # convert *.dicom to ACC_Serial.nii.gz
     d2ncmd = d2n + svalue + para + '"' + series_path + '" "' + series_path + '" > /dev/null'
     print(d2ncmd)
     os.system(d2ncmd)
 
     nii_file = os.path.join(series_path, svalue + '.nii.gz')
-    seg_file = os.path.join(series_path, svalue + '_seg.nii.gz')
-    log_file = os.path.join(series_path, svalue + '_log.txt')
+    seg_file = os.path.join(series_path, svalue + '_pos_seg.nii.gz')
+    log_file = os.path.join(series_path, svalue + '_pos_log.txt')
     if os.path.isfile(nii_file):
+        nii_img = nib.load(nii_file)
+        nii_img_data = nii_img.get_fdata()
+        # nii_img_data = np.squeeze(nii_img_data)
+        if nii_img_data.ndim > 3:
+            nii_img_data_0 = nii_img.slicer[:,:,:,0]
+            nii_file = os.path.join(series_path, svalue + '_0.nii.gz')
+            nii_img_data_0.to_filename(nii_file)
+            nii_img_data = nii_img_data[:,:,:,0]
+        nii_first_img = nii_img_data[:,:,0]
+        nii_first_img_90 = np.rot90(nii_first_img)
+        # print(nii_first_img_90)
+        # print(ds_first.pixel_array)
+        if ~(nii_first_img_90 == ds_first.pixel_array).all():
+            dcm_list.reverse()
+            seg_file = seg_file.replace('_pos', '_rev')
+            log_file = log_file.replace('_pos', '_rev')
         segcmd = seg + '"' + nii_file + '" --segment_output_names "' + seg_file + '" > "' + log_file + '"'
         print(segcmd)
         os.system(segcmd)
     else:
         print('\033[1;35m', nii_file, ' does not exists. \033[0m')
+    
     if os.path.isfile(seg_file):
         seg_img = nib.load(seg_file)
         seg_img_data = seg_img.get_fdata()
@@ -76,14 +85,15 @@ for series_path in sag_brain_list:
         if seg_img_size > 0:
             # Extended border Start
             print(seg_file + " OK.")
-            seg_img_data = np.squeeze(seg_img_data)
-            X, Y, Z = seg_img_data.shape
+            # seg_img_data = np.squeeze(seg_img_data)
+            X, Y, Z, D = seg_img_data.shape
+            # print(X, Y, Z, D)
             X = X - 1
             Y = Y - 1
             txt = {}
             # txt['PseudoAcc'] = accession
             # txt['SeriesNumber'] = series
-            for i in range(seg_img_data.shape[-1]):
+            for i in range(Z):
                 seg_img_size_cur = np.count_nonzero(seg_img_data[:,:,i])
                 if seg_img_size_cur > 0:
                     dcm_cur = os.path.join(series_path, dcm_list[i])

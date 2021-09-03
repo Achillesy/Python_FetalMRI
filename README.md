@@ -39,6 +39,15 @@ https://github.com/gift-surg/MONAIfbs
 │   ├── batch_prepare_dcms.py         筛选适合标注的dcm文件
 │   ├── get_seg_info.py               从XXX_seg.nii.gz中提取seg信息到XXX_seg_info.json
 │   ├── writeDicom2Instance.py        把dicom信息写入instance
+│   ├── writeInfoAtrialL2Instance.py  把AtrialL信息写入instance
+│   ├── writeInfoAtrialR2Instance.py  把AtrialR信息写入instance
+│   ├── writeInfoBiparietal2Instance.py 把Biparietal信息写入instance
+│   ├── writeInfoCerebellar2Instance.py 把Cerebellar信息写入instance
+│   ├── writeInfoCisterna2Instance.py 把Cisterna信息写入instance
+│   ├── writeInfoFronto2Instance.py   把Fronto信息写入instance
+│   ├── writeInfoHVermis2Instance.py  把Height of Vermis信息写入instance
+│   ├── writeInfoPons2Instance.py     把Pons信息写入instance
+│   ├── writeInfoVermis2Instance.py   把Vermis信息写入instance
 │   ├── writePseudo2Dicom.py          将虚拟的用户名和AccNumber写入目录下的dcm文件
 │   └── writeSegInfo2Instance.py      将segment信息写入instance
 ├── batch_fetal_brain_seg.py          旧版使用dcm2niix把序列转换为nii.gz，然后执行fetal_brain_seg分割
@@ -100,6 +109,42 @@ CREATE TABLE "instance" (
 	"SegWidth"	INTEGER DEFAULT 0,
 	"SegY"	INTEGER DEFAULT 0,
 	"SegHeight"	INTEGER DEFAULT 0,
+	"Pons_1x"	INTEGER,
+	"Pons_1y"	INTEGER,
+	"Pons_2x"	INTEGER,
+	"Pons_2y"	INTEGER,
+	"Vermis_1x"	INTEGER,
+	"Vermis_1y"	INTEGER,
+	"Vermis_2x"	INTEGER,
+	"Vermis_2y"	INTEGER,
+	"HVermis_1x"	INTEGER,
+	"HVermis_1y"	INTEGER,
+	"HVermis_2x"	INTEGER,
+	"HVermis_2y"	INTEGER,
+	"Cisterna_1x"	INTEGER,
+	"Cisterna_1y"	INTEGER,
+	"Cisterna_2x"	INTEGER,
+	"Cisterna_2y"	INTEGER,
+	"Fronto_1x"	INTEGER,
+	"Fronto_1y"	INTEGER,
+	"Fronto_2x"	INTEGER,
+	"Fronto_2y"	INTEGER,
+	"AtrialR_1x"	INTEGER,
+	"AtrialR_1y"	INTEGER,
+	"AtrialR_2x"	INTEGER,
+	"AtrialR_2y"	INTEGER,
+	"AtrialL_1x"	INTEGER,
+	"AtrialL_1y"	INTEGER,
+	"AtrialL_2x"	INTEGER,
+	"AtrialL_2y"	INTEGER,
+	"Cerebellar_1x"	INTEGER,
+	"Cerebellar_1y"	INTEGER,
+	"Cerebellar_2x"	INTEGER,
+	"Cerebellar_2y"	INTEGER,
+	"Biparietal_1x"	INTEGER,
+	"Biparietal_1y"	INTEGER,
+	"Biparietal_2x"	INTEGER,
+	"Biparietal_2y"	INTEGER,
 	"State"	INTEGER DEFAULT 0,
 	PRIMARY KEY("Id")
 );
