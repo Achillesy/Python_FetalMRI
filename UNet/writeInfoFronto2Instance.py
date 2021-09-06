@@ -48,8 +48,9 @@ dbFile = "/mnt/Storage/Xuchu_Liu/Workspace/Python/FetalMRI/FetalMRIsqlite3.db"
 json_path_1 = "/home/achilles/Workspace/DataSet/FetalData/20210716_Jubril_GUI"
 json_path_2 = "/home/achilles/Workspace/DataSet/FetalData/20210830_Jubril_GUI"
 json_path_3 = "/home/achilles/Workspace/Data/fetal/json"
+json_path_4 = "/home/achilles/Workspace/DataSet/FetalData/20210906_Jubril_GUI"
 
-curFolder = os.walk(json_path_2)
+curFolder = os.walk(json_path_4)
 
 # ##########
 conn = FetalDB(dbFile)
