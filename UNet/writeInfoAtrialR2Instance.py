@@ -70,7 +70,11 @@ for path, dir_list, file_list in curFolder:
                     seg_info = json.load(f)
                 accession = seg_info['Measurement']['AccessionNumber']
                 series = seg_info['Measurement']['SeriesNumber']
+                if len(series) < 2:
+                    series = '0' + series
                 instance = seg_info['Measurement']['InstanceNumber']
+                if len(instance) < 2:
+                    instance = '0' + instance
                 seriesName = accession + '_' + series
                 instanceName = accession + '_' + series + '_' + instance
                 key = str(uuid.uuid3(uuid.NAMESPACE_DNS, instanceName))
