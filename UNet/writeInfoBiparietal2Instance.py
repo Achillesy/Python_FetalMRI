@@ -49,8 +49,9 @@ json_path_1 = "/home/achilles/Workspace/DataSet/FetalData/20210716_Jubril_GUI"
 json_path_2 = "/home/achilles/Workspace/DataSet/FetalData/20210830_Jubril_GUI"
 json_path_3 = "/home/achilles/Workspace/Data/fetal/json"
 json_path_4 = "/home/achilles/Workspace/DataSet/FetalData/20210906_Jubril_GUI"
+json_path_5 = "/home/achilles/Workspace/DataSet/FetalData/20210907_Jubril_GUI"
 
-curFolder = os.walk(json_path_4)
+curFolder = os.walk(json_path_5)
 
 # ##########
 conn = FetalDB(dbFile)
@@ -81,7 +82,7 @@ for path, dir_list, file_list in curFolder:
                 Biparietal_1x, Biparietal_1y = seg_info['Measurement']['mask1']
                 Biparietal_2x, Biparietal_2y = seg_info['Measurement']['mask2']
                 # print(key, Biparietal_1x, Biparietal_1y, Biparietal_2x, Biparietal_2y)
-                if conn.update_instance_biparietal(key, Biparietal_1x, Biparietal_1y, Biparietal_2x, Biparietal_2y):
+                if conn.update_instance_biparietal(key, Biparietal_1x-1, Biparietal_1y-1, Biparietal_2x-1, Biparietal_2y-1):
                     print('UPDATE ' + key + ' success.')
                     succ = succ + 1
             except  Exception as e:
