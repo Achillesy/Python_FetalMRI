@@ -13,7 +13,7 @@ import sys
 sys.path.append('/mnt/Storage/Xuchu_Liu/Workspace/Python/FetalMRI')
 import csv
 from itertools import islice
-from lib.fetaldb import FetalDB
+from dblib.fetaldb import FetalDB
 
 if len(sys.argv) != 2:
     print("""

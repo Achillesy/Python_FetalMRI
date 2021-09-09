@@ -33,7 +33,7 @@ sys.path.append('/mnt/Storage/Xuchu_Liu/Workspace/Python/FetalMRI')
 import pydicom
 import uuid
 
-from lib.fetaldb import FetalDB
+from dblib.fetaldb import FetalDB
 
 dbFile = "/mnt/Storage/Xuchu_Liu/Workspace/Python/FetalMRI/FetalMRIsqlite3.db"
 dcm_path_1 = "/home/achilles/Workspace/DataSet/FetalData/20210301_asher"

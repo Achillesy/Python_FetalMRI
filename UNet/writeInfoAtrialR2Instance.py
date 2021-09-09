@@ -10,7 +10,7 @@
 # SAG Fronto        Fronto-Occipital Diameter
 # AX  AtrialR       Atrial Diameter of Lat Ventricle R
 # AX  AtrialL       Atrial Diameter of Lat Ventricle L
-# AX  Cerebellar    Transverse Cerebellar
+# COR Cerebellar    Transverse Cerebellar
 # COR Biparietal    Cerebral Biparietal Diameter
 #
 # Pons_1x,       Pons_1y
@@ -42,7 +42,7 @@ sys.path.append('/mnt/Storage/Xuchu_Liu/Workspace/Python/FetalMRI')
 import json
 import uuid
 
-from lib.fetaldb import FetalDB
+from dblib.fetaldb import FetalDB
 
 dbFile = "/mnt/Storage/Xuchu_Liu/Workspace/Python/FetalMRI/FetalMRIsqlite3.db"
 json_path_1 = "/home/achilles/Workspace/DataSet/FetalData/20210716_Jubril_GUI"
