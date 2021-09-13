@@ -161,3 +161,12 @@ CREATE TABLE "instance" (
 #     6: no subject dir
 #     9: target stack
 ```
+## instance的标志位
+```
+# table series State
+#     0: import from dcm
+#     1: Segmentation
+#     2: SAG
+#     3: AX
+#     4: COR
+```
