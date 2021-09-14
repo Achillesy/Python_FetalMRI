@@ -13,7 +13,7 @@ https://github.com/gift-surg/MONAIfbs
 
 ## 文件列表
 ```
-├── lib
+├── dblib
 │   ├── __init__.py
 │   └── fetaldb.py                    操作数据库lib
 ├── manage_orthanc
