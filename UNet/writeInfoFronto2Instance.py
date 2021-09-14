@@ -38,7 +38,8 @@
 
 import os
 import sys
-sys.path.append('/mnt/Storage/Xuchu_Liu/Workspace/Python/FetalMRI')
+
+sys.path.append("/mnt/Storage/Xuchu_Liu/Workspace/Python/FetalMRI")
 import json
 import uuid
 
@@ -50,8 +51,9 @@ json_path_2 = "/home/achilles/Workspace/DataSet/FetalData/20210830_Jubril_GUI"
 json_path_3 = "/home/achilles/Workspace/Data/fetal/json"
 json_path_4 = "/home/achilles/Workspace/DataSet/FetalData/20210906_Jubril_GUI"
 json_path_5 = "/home/achilles/Workspace/DataSet/FetalData/20210907_Jubril_GUI"
+json_path_6 = "/home/achilles/Workspace/DataSet/FetalData/20210913_Jubril_GUI"
 
-curFolder = os.walk(json_path_5)
+curFolder = os.walk(json_path_6)
 
 # ##########
 conn = FetalDB(dbFile)
@@ -62,31 +64,35 @@ succ = 0
 for path, dir_list, file_list in curFolder:
     for file_name in file_list:
         # Fronto-Occipital Diameter
-        if '_Fronto_Occipital_Diameter.json' in file_name:
+        if ("_Fronto_Occipital_Diameter.json" in file_name) or (
+            "_Fronto_Occpitial_Diameter.json" in file_name
+        ):
             json_file = os.path.join(path, file_name)
             print(json_file)
             num = num + 1
             try:
-                with open(json_file, 'r') as f:
+                with open(json_file, "r") as f:
                     seg_info = json.load(f)
-                accession = seg_info['Measurement']['AccessionNumber']
-                series = seg_info['Measurement']['SeriesNumber']
+                accession = seg_info["Measurement"]["AccessionNumber"]
+                series = seg_info["Measurement"]["SeriesNumber"]
                 if len(series) < 2:
-                    series = '0' + series
-                instance = seg_info['Measurement']['InstanceNumber']
+                    series = "0" + series
+                instance = seg_info["Measurement"]["InstanceNumber"]
                 if len(instance) < 2:
-                    instance = '0' + instance
-                seriesName = accession + '_' + series
-                instanceName = accession + '_' + series + '_' + instance
+                    instance = "0" + instance
+                seriesName = accession + "_" + series
+                instanceName = accession + "_" + series + "_" + instance
                 key = str(uuid.uuid3(uuid.NAMESPACE_DNS, instanceName))
-                Fronto_1x, Fronto_1y = seg_info['Measurement']['mask1']
-                Fronto_2x, Fronto_2y = seg_info['Measurement']['mask2']
+                Fronto_1x, Fronto_1y = seg_info["Measurement"]["mask1"]
+                Fronto_2x, Fronto_2y = seg_info["Measurement"]["mask2"]
                 # print(key, Fronto_1x, Fronto_1y, Fronto_2x, Fronto_2y)
-                if conn.update_instance_fronto(key, Fronto_1x-1, Fronto_1y-1, Fronto_2x-1, Fronto_2y-1):
-                    print('UPDATE ' + key + ' success.')
+                if conn.update_instance_fronto(
+                    key, Fronto_1x - 1, Fronto_1y - 1, Fronto_2x - 1, Fronto_2y - 1
+                ):
+                    print("UPDATE " + key + " success.")
                     succ = succ + 1
-            except  Exception as e:
-                print('Exception Reason:', e)
+            except Exception as e:
+                print("Exception Reason:", e)
                 pass
 
 print("Total %d of %d segmentation info update to instance table." % (succ, num))
